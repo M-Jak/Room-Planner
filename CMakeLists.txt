@@ -88,6 +88,7 @@ function(create_project_from_sources folder)
             "src/${folder}/*.tes"
             "src/${folder}/*.gs"
             "src/${folder}/*.cs"
+	    "src/imgui/*.cpp"
     )
 
     # Set the target name based on the folder (chapter) name
@@ -143,4 +144,4 @@ foreach(CHAPTER "Room-Planner")
     create_project_from_sources(${CHAPTER})
 endforeach(CHAPTER)
 
-include_directories(${CMAKE_SOURCE_DIR}/includes)
+include_directories(${CMAKE_SOURCE_DIR}/includes ${CMAKE_SOURCE_DIR}/includes/imgui ${CMAKE_SOURCE_DIR}/includes/imgui/misc/debugger ${CMAKE_SOURCE_DIR}/includes/imgui/backends)
