@@ -241,6 +241,13 @@ void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
+void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
+        changeImguiMode(window);
+    }
+}
+
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
