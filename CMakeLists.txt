@@ -117,6 +117,8 @@ function(create_project_from_sources folder)
                 "src/${folder}/*.tes"
                 "src/${folder}/*.gs"
                 "src/${folder}/*.cs"
+		"src/${folder}/*.vert"
+		"src/${folder}/*.frag"
         )
 
         if(WIN32)
