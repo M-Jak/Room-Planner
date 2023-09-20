@@ -117,6 +117,13 @@ function(create_project_from_sources folder)
                 "src/${folder}/*.tes"
                 "src/${folder}/*.gs"
                 "src/${folder}/*.cs"
+		"src/${folder}/*.glsl"
+		"src/${folder}/*.vert"
+		"src/${folder}/*.frag"
+		"src/${folder}/*.geom"
+		"src/${folder}/*.comp"
+		"src/${folder}/*.tesse"
+		"src/${folder}/*.tessc"
         )
 
         if(WIN32)
