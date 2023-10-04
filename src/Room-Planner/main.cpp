@@ -1,5 +1,3 @@
-
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -40,10 +38,16 @@ bool firstMouse = true;
 //imgui mode -> if true we are not moving the camera
 bool shiftKeyPressed = false; //this + mouserightclick activates/deactivates imgui mode
 bool imguiMode = false; 
+int newModels = 0;
 
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+//models
+std::vector<ModelData> models;
+//current model -> used to move the current model using wasd when not in camera mode
+ModelData currentModel = {};
 
 
 int main()
@@ -107,7 +111,7 @@ int main()
     Shader wallShader("wall_vertex.vert", "wall_fragment.frag");
     Shader modelShader("model_vertex.vert", "model_fragment.frag");
 
-    float length, width;
+    float length=0.0f, width=0.0f;
     bool walls_created = false;
     float* wall_vertices;
     GLuint VAO_walls, VBO_walls, EBO_walls;
@@ -137,14 +141,18 @@ int main()
 
     
 
+    glm::vec3 translate(glm::vec3(0.0f, 0.3f*2.0f, 0.0f));
     // load models
     // -----------
-    Model ourModel(FileSystem::getPath("resources/objects/backpack/backpack.obj"));
-    std::vector<Model *> models;
-
+    ModelData ourModel = {
+        Model((FileSystem::getPath("resources/objects/backpack/backpack.obj"))),
+        translate,                  // translation vector
+        0.0f,                       // rotation angle
+        glm::vec3(0.3f * 1.0f),     // scaling vector
+        true,                       
+    };
     // render loop
     // -----------
-    glm::vec3 translate(glm::vec3(0.0f, 0.0f, 0.0f));
 
     float minLength = 5.0f; // Minimum length value
     float minWidth = 5.0f;  // Minimum width value
@@ -164,13 +172,14 @@ int main()
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
             ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             // ImGui input fields
-            ImGui::InputFloat("Length", &length, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
-            ImGui::InputFloat("Width", &width, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
+            
 
             // Clamp values to minimum values
             length = (length < minLength) ? minLength : length;
             width = (width < minWidth) ? minWidth : width;
             if (!walls_created) {
+                ImGui::InputFloat("Length", &length, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
+                ImGui::InputFloat("Width", &width, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
                 if (ImGui::Button("Create walls")) {
                     walls_created = true;
                     wall_vertices = new float[24] {
@@ -203,10 +212,13 @@ int main()
                     glBindVertexArray(0);
                 }
             }
-            if (ImGui::Button("Add test model")) {
-                models.push_back(&ourModel);
+            if (walls_created && ImGui::Button("Add test model")) {
+                ModelData newModel = ourModel;
+                newModel.translate = glm::vec3(models.size() * 1.0f,0.0f,0.0f);
+                models.push_back(newModel);
+                newModels++;
             }
-            ImGui::Text("Currently loaded %d test models", models.size());
+            ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size()+1 : models.size());
         }
         // per-frame time logic
         // --------------------
@@ -227,10 +239,6 @@ int main()
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
-       
-
-
-        
         
         if (walls_created) {
             wallShader.use();
@@ -246,16 +254,28 @@ int main()
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
         
-        // render the loaded model
-        for (int i = 0; i < models.size(); i++) {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, translate); // translate it down so it's at the center of the scene
-            model = glm::translate(model, glm::vec3(0.0f + static_cast<float>(i)*3.0f, 0.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-            modelShader.setMat4("model", model);
-            models[i]->Draw(modelShader);
-        }
 
+        // render the loaded models
+        glm::mat4 modelMatrix;
+        for (int i = 0; i < models.size(); i++) {
+            modelMatrix = glm::mat4(1.0f);
+            modelMatrix = glm::translate(modelMatrix, translate); 
+            modelMatrix = glm::translate(modelMatrix, models[i].translate);
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, models[i].scale);	// it's a bit too big for our scene, so scale it down
+            modelShader.setMat4("model", modelMatrix);
+            models[i].model.Draw(modelShader);
+        }
+        // render the current model
+        if (currentModel.valid) {
+            modelMatrix = glm::mat4(1.0f);
+            modelMatrix = glm::translate(modelMatrix, translate);
+            modelMatrix = glm::translate(modelMatrix, currentModel.translate);
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(currentModel.angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
+            modelShader.setMat4("model", modelMatrix);
+            currentModel.model.Draw(modelShader);
+        }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -280,7 +300,7 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (!imguiMode) {
+    if (!imguiMode) {  //camera mode
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             camera.ProcessKeyboard(FORWARD, deltaTime);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -289,6 +309,16 @@ void processInput(GLFWwindow *window)
             camera.ProcessKeyboard(LEFT, deltaTime);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, deltaTime);
+    }
+    else if (imguiMode && currentModel.valid) {
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            currentModel.translate.z -= 1.0f * deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            currentModel.translate.z += 1.0f * deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            currentModel.translate.x -= 1.0f * deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            currentModel.translate.x += 1.0f * deltaTime;
     }
 }
 
@@ -346,10 +376,19 @@ void changeImguiMode(GLFWwindow* window)
 
     if (imguiMode) {
         backupCamera = camera;
+        if (models.size() > 0) {
+            currentModel = models.back();
+            models.pop_back();
+            newModels = 0;
+        }
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
     else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         camera = backupCamera;
+        if (currentModel.valid /*&& models.size() > 0*/) {
+            models.insert(models.end() - newModels, currentModel);
+            currentModel = {};
+        }
     }
 }

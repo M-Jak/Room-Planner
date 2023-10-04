@@ -32,6 +32,10 @@ public:
     string directory;
     bool gammaCorrection;
 
+    Model() : gammaCorrection(false) {
+        loadModel("Z:\\Users\\onira\\Documents\\_FINKI\\Graphics Project\\Room-Planner\\includes\\learnopengl\\model.h");
+    }
+
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
     {
@@ -202,6 +206,14 @@ private:
     }
 };
 
+struct ModelData {
+    Model model;
+    glm::vec3 translate;
+    float angle;
+    glm::vec3 scale;
+
+    bool valid = false; // used in order to check if the model is valid or just a placeholder, since initializing structs to null is not possible
+};
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
 {
