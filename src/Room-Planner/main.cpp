@@ -23,7 +23,7 @@ void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void changeImguiMode(GLFWwindow* window);
-
+AABB calculateAABB(std::vector<Mesh> &meshes);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
@@ -149,14 +149,20 @@ int main()
         translate,                  // translation vector
         0.0f,                       // rotation angle
         glm::vec3(0.3f * 1.0f),     // scaling vector
+        AABB(),
         true,                       
     };
+
+    ourModel.boundingBox = calculateAABB(ourModel.model.meshes);
+
     // render loop
     // -----------
 
-    float minLength = 5.0f; // Minimum length value
-    float minWidth = 5.0f;  // Minimum width value
-    float minHeight = 3.0f; // Minimum height value
+    const float minLength = 5.0f; // Minimum length value
+    const float minWidth = 5.0f;  // Minimum width value
+    const float minHeight = 3.0f; // Minimum height value
+
+    bool printed = false;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -212,7 +218,7 @@ int main()
                     glBindVertexArray(0);
                 }
             }
-            if (walls_created && ImGui::Button("Add test model")) {
+            if (walls_created && ImGui::Button("Add test model")) { //generate model add button only if walls are created 
                 ModelData newModel = ourModel;
                 newModel.translate = glm::vec3(models.size() * 1.0f,0.0f,0.0f);
                 models.push_back(newModel);
@@ -275,6 +281,10 @@ int main()
             modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
             currentModel.model.Draw(modelShader);
+            if(!printed)
+            std::printf("min %f %f %f max %f %f %f", currentModel.boundingBox.minCorner.x, currentModel.boundingBox.minCorner.y, currentModel.boundingBox.minCorner.z, 
+                currentModel.boundingBox.maxCorner.x, currentModel.boundingBox.maxCorner.y, currentModel.boundingBox.maxCorner.z);
+            printed = true;
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -391,4 +401,30 @@ void changeImguiMode(GLFWwindow* window)
             currentModel = {};
         }
     }
+}
+
+AABB calculateAABB(std::vector<Mesh> &meshes) {
+    glm::vec3 minCorner(std::numeric_limits<float>::max());
+    glm::vec3 maxCorner(std::numeric_limits<float>::lowest());
+    
+    for each (Mesh m in meshes)
+    {
+        std::vector<Vertex> vertices = m.vertices;
+
+        for each (Vertex vertex in vertices) {
+            // Update the minimum corner
+            minCorner.x = std::min(minCorner.x, vertex.Position.x);
+            minCorner.y = std::min(minCorner.y, vertex.Position.y);
+            minCorner.z = std::min(minCorner.z, vertex.Position.z);
+
+            // Update the maximum corner
+            maxCorner.x = std::max(maxCorner.x, vertex.Position.x);
+            maxCorner.y = std::max(maxCorner.y, vertex.Position.y);
+            maxCorner.z = std::max(maxCorner.z, vertex.Position.z);
+        }
+    }
+
+    
+
+    return AABB(minCorner, maxCorner);
 }

@@ -33,7 +33,7 @@ public:
     bool gammaCorrection;
 
     Model() : gammaCorrection(false) {
-        loadModel("Z:\\Users\\onira\\Documents\\_FINKI\\Graphics Project\\Room-Planner\\includes\\learnopengl\\model.h");
+        loadModel("");
     }
 
     // constructor, expects a filepath to a 3D model.
@@ -206,11 +206,25 @@ private:
     }
 };
 
+
+
+struct AABB {
+    glm::vec3 minCorner;
+    glm::vec3 maxCorner;
+
+    AABB() : minCorner(glm::vec3(std::numeric_limits<float>::max())), maxCorner(glm::vec3(std::numeric_limits<float>::lowest())) {}
+    AABB(const glm::vec3 &min, const glm::vec3 &max) : minCorner(min), maxCorner(max) {}
+};
+
 struct ModelData {
     Model model;
     glm::vec3 translate;
     float angle;
     glm::vec3 scale;
+
+    AABB boundingBox;
+    /*glm::vec3 minCorner;
+    glm::vec3 maxCorner;*/
 
     bool valid = false; // used in order to check if the model is valid or just a placeholder, since initializing structs to null is not possible
 };
