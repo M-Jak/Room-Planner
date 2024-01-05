@@ -176,7 +176,6 @@ int main()
         {
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
             ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
             // ImGui input fields
 
 
