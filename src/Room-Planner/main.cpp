@@ -21,15 +21,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow* window);
 void changeImguiMode(GLFWwindow* window);
-AABB calculateAABB(std::vector<Mesh> &meshes);
+AABB calculateAABB(std::vector<Mesh>& meshes);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
 // camera
-Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f,1.0f,0.0f),-90.0f,-45.0f);
+Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -45.0f);
 Camera backupCamera;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -37,7 +37,7 @@ bool firstMouse = true;
 
 //imgui mode -> if true we are not moving the camera
 bool shiftKeyPressed = false; //this + mouserightclick activates/deactivates imgui mode
-bool imguiMode = false; 
+bool imguiMode = false;
 int newModels = 0;
 
 // timing
@@ -111,7 +111,7 @@ int main()
     Shader wallShader("wall_vertex.vert", "wall_fragment.frag");
     Shader modelShader("model_vertex.vert", "model_fragment.frag");
 
-    float length=0.0f, width=0.0f;
+    float length = 0.0f, width = 0.0f;
     bool walls_created = false;
     float* wall_vertices;
     GLuint VAO_walls, VBO_walls, EBO_walls;
@@ -119,7 +119,7 @@ int main()
     glGenBuffers(1, &VBO_walls);
     glGenBuffers(1, &EBO_walls);
 
-    
+
 
     std::vector<GLuint> wall_indices{
         //face wall
@@ -139,9 +139,9 @@ int main()
         1,2,3
     };
 
-    
 
-    glm::vec3 translate(glm::vec3(0.0f, 0.3f*2.0f, 0.0f));
+
+    glm::vec3 translate(glm::vec3(0.0f, 0.3f * 2.0f, 0.0f));
     // load models
     // -----------
     ModelData ourModel = {
@@ -150,7 +150,7 @@ int main()
         0.0f,                       // rotation angle
         glm::vec3(0.3f * 1.0f),     // scaling vector
         AABB(),
-        true,                       
+        true,
     };
 
     ourModel.boundingBox = calculateAABB(ourModel.model.meshes);
@@ -167,18 +167,19 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        
+
         //initialize imgui window
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        
+
         //add components to imgui window
         {
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
             ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
             // ImGui input fields
-            
+
 
             // Clamp values to minimum values
             length = (length < minLength) ? minLength : length;
@@ -190,22 +191,22 @@ int main()
                     walls_created = true;
                     wall_vertices = new float[24] {
                         //floor points
-                        -length / 2,0.0f,width / 2, //top left
-                        length / 2,0.0f,width / 2,  //top right
-                        -length / 2,0.0f,-width / 2, //bottom left
-                        length / 2,0.0f,-width / 2, //bottom right
+                        -length / 2, 0.0f, width / 2, //top left
+                            length / 2, 0.0f, width / 2,  //top right
+                            -length / 2, 0.0f, -width / 2, //bottom left
+                            length / 2, 0.0f, -width / 2, //bottom right
 
-                        //roof points
-                        -length / 2,3.0f,width / 2, //top left
-                        length / 2,3.0f,width / 2,  //top right
-                        -length / 2,3.0f,-width / 2, //bottom left
-                        length / 2,3.0f,-width / 2, //bottom right
+                            //roof points
+                            -length / 2, 3.0f, width / 2, //top left
+                            length / 2, 3.0f, width / 2,  //top right
+                            -length / 2, 3.0f, -width / 2, //bottom left
+                            length / 2, 3.0f, -width / 2, //bottom right
                     };
 
                     glBindVertexArray(VAO_walls);
 
                     glBindBuffer(GL_ARRAY_BUFFER, VBO_walls);
-                    glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float) , wall_vertices, GL_STATIC_DRAW);
+                    glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), wall_vertices, GL_STATIC_DRAW);
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_walls);
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wall_indices) * sizeof(GLuint), wall_indices.data(), GL_STATIC_DRAW);
@@ -220,11 +221,23 @@ int main()
             }
             if (walls_created && ImGui::Button("Add test model")) { //generate model add button only if walls are created 
                 ModelData newModel = ourModel;
-                newModel.translate = glm::vec3(models.size() * 1.0f,0.0f,0.0f);
+                newModel.translate = glm::vec3(models.size() * 1.0f, 0.0f, 0.0f);
                 models.push_back(newModel);
                 newModels++;
             }
-            ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size()+1 : models.size());
+            ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
+
+
+
+            if (imguiMode && currentModel.valid) {
+                if (ImGui::Button("Rotate Left")) {
+                    currentModel.angle -= 5.0f; // Adjust the rotation angle as needed
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Rotate Right")) {
+                    currentModel.angle += 5.0f; // Adjust the rotation angle as needed
+                }
+            }
         }
         // per-frame time logic
         // --------------------
@@ -235,7 +248,7 @@ int main()
 
         // input
         // -----
-            processInput(window);
+        processInput(window);
 
         // render
         // ------
@@ -245,7 +258,7 @@ int main()
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
-        
+
         if (walls_created) {
             wallShader.use();
             wallShader.setMat4("projection", projection);
@@ -259,13 +272,13 @@ int main()
         modelShader.use();
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
-        
+
 
         // render the loaded models
         glm::mat4 modelMatrix;
         for (int i = 0; i < models.size(); i++) {
             modelMatrix = glm::mat4(1.0f);
-            modelMatrix = glm::translate(modelMatrix, translate); 
+            modelMatrix = glm::translate(modelMatrix, translate);
             modelMatrix = glm::translate(modelMatrix, models[i].translate);
             modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].angle), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, models[i].scale);	// it's a bit too big for our scene, so scale it down
@@ -281,9 +294,9 @@ int main()
             modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
             currentModel.model.Draw(modelShader);
-            if(!printed)
-            std::printf("min %f %f %f max %f %f %f", currentModel.boundingBox.minCorner.x, currentModel.boundingBox.minCorner.y, currentModel.boundingBox.minCorner.z, 
-                currentModel.boundingBox.maxCorner.x, currentModel.boundingBox.maxCorner.y, currentModel.boundingBox.maxCorner.z);
+            if (!printed)
+                std::printf("min %f %f %f max %f %f %f", currentModel.boundingBox.minCorner.x, currentModel.boundingBox.minCorner.y, currentModel.boundingBox.minCorner.z,
+                    currentModel.boundingBox.maxCorner.x, currentModel.boundingBox.maxCorner.y, currentModel.boundingBox.maxCorner.z);
             printed = true;
         }
         ImGui::Render();
@@ -305,7 +318,7 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -403,10 +416,10 @@ void changeImguiMode(GLFWwindow* window)
     }
 }
 
-AABB calculateAABB(std::vector<Mesh> &meshes) {
+AABB calculateAABB(std::vector<Mesh>& meshes) {
     glm::vec3 minCorner(std::numeric_limits<float>::max());
     glm::vec3 maxCorner(std::numeric_limits<float>::lowest());
-    
+
     for each (Mesh m in meshes)
     {
         std::vector<Vertex> vertices = m.vertices;
@@ -424,7 +437,7 @@ AABB calculateAABB(std::vector<Mesh> &meshes) {
         }
     }
 
-    
+
 
     return AABB(minCorner, maxCorner);
 }
