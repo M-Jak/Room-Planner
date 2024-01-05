@@ -16,7 +16,6 @@
 
 #include <iostream>
 
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods);
@@ -145,7 +144,7 @@ int main()
     // load models
     // -----------
     ModelData ourModel = {
-        Model((FileSystem::getPath("resources/objects/backpack/backpack.obj"))),
+        Model((FileSystem::getPath("resources/objects/cyborg/cyborg.obj"))),
         translate,                  // translation vector
         0.0f,                       // rotation angle
         glm::vec3(0.3f * 1.0f),     // scaling vector
