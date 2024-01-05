@@ -33,6 +33,7 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
+    glm::mat4 projection;
     // euler Angles
     float Yaw;
     float Pitch;
@@ -42,13 +43,16 @@ public:
     float Zoom;
 
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, int scr_width=1920, int scr_height=1080) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+        SCR_WIDTH = scr_width;
+        SCR_HEIGHT = scr_height;
         updateCameraVectors();
+        updateProjectionMatrix();
     }
     // constructor with scalar values
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -58,6 +62,7 @@ public:
         Yaw = yaw;
         Pitch = pitch;
         updateCameraVectors();
+        updateProjectionMatrix();
     }
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
@@ -112,7 +117,41 @@ public:
             Zoom = 45.0f;
     }
 
+    glm::vec3 GetRayDirection(double xpos, double ypos) {
+        // Calculate normalized device coordinates
+        float x = (2.0f * xpos) / SCR_WIDTH - 1.0f;
+        float y = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
+
+        // Calculate clip coordinates
+        glm::vec4 clipCoords(x, y, -1.0, 1.0);
+
+        // Inverse projection matrix
+        glm::mat4 invProj = glm::inverse(projection);
+
+        // Calculate eye coordinates
+        glm::vec4 eyeCoords = invProj * clipCoords;
+        eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0, 0.0);
+
+        // Inverse view matrix
+        glm::mat4 invView = glm::inverse(GetViewMatrix());
+
+        // Calculate world coordinates
+        glm::vec4 rayWorld = invView * eyeCoords;
+        glm::vec3 rayDir = glm::normalize(glm::vec3(rayWorld));
+
+        return rayDir;
+    }
+
+    void setSCR_WIDTH(int w) {
+        SCR_WIDTH = w;
+    }
+
+    void setSCR_HEIGHT(int h) {
+        SCR_HEIGHT = h;
+    }
+
 private:
+    int SCR_WIDTH, SCR_HEIGHT;
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
     {
@@ -125,6 +164,11 @@ private:
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up    = glm::normalize(glm::cross(Right, Front));
+    }
+
+    void updateProjectionMatrix()
+    {
+        projection = glm::perspective(glm::radians(Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     }
 };
 #endif

@@ -23,12 +23,13 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void changeImguiMode(GLFWwindow* window);
 AABB calculateAABB(std::vector<Mesh> &meshes);
+bool rayAABBIntersection(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const AABB& aabb);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
 // camera
-Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f,1.0f,0.0f),-90.0f,-45.0f);
+Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f,1.0f,0.0f),-90.0f,-45.0f, SCR_WIDTH, SCR_HEIGHT);
 Camera backupCamera;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -57,6 +58,9 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    camera.setSCR_WIDTH(SCR_WIDTH);
+    camera.setSCR_HEIGHT(SCR_HEIGHT);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -365,12 +369,36 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 }
 
-void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods)
-{
+void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
         changeImguiMode(window);
     }
+    else if (imguiMode && button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        glm::vec3 rayOrigin = camera.Position;
+        glm::vec3 rayDir = glm::normalize(camera.GetRayDirection(xpos, ypos));
+
+        int modelIndexToRemove = -1;
+
+        // Find out if the ray intersects with a model's aabb
+        for (int i = models.size() - 1; i >= 0; --i) {
+            if (rayAABBIntersection(rayOrigin, rayDir, models[i].boundingBox)) {
+                modelIndexToRemove = i;
+                break;
+            }
+        }
+
+        // todo: Remove the model to avoid vector begin error (still doesn't fix it for some reason)
+        if (modelIndexToRemove != -1) {
+            currentModel = models[modelIndexToRemove];
+            models.erase(models.begin() + modelIndexToRemove);
+            //changeImguiMode(window);
+        }
+    }
 }
+
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
@@ -385,11 +413,11 @@ void changeImguiMode(GLFWwindow* window)
 
     if (imguiMode) {
         backupCamera = camera;
-        if (models.size() > 0) {
+        /*if (models.size() > 0) {
             currentModel = models.back();
             models.pop_back();
             newModels = 0;
-        }
+        }*/
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
     else {
@@ -411,19 +439,40 @@ AABB calculateAABB(std::vector<Mesh> &meshes) {
         std::vector<Vertex> vertices = m.vertices;
 
         for each (Vertex vertex in vertices) {
-            // Update the minimum corner
+            // find this model's minCorner
             minCorner.x = std::min(minCorner.x, vertex.Position.x);
             minCorner.y = std::min(minCorner.y, vertex.Position.y);
             minCorner.z = std::min(minCorner.z, vertex.Position.z);
 
-            // Update the maximum corner
+            // find this model's maxCorner
             maxCorner.x = std::max(maxCorner.x, vertex.Position.x);
             maxCorner.y = std::max(maxCorner.y, vertex.Position.y);
             maxCorner.z = std::max(maxCorner.z, vertex.Position.z);
         }
     }
 
-    
-
     return AABB(minCorner, maxCorner);
+}
+
+bool rayAABBIntersection(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const AABB& aabb) {
+    float tMin = (aabb.minCorner.x - rayOrigin.x) / rayDir.x;
+    float tMax = (aabb.maxCorner.x - rayOrigin.x) / rayDir.x;
+
+    if (tMin > tMax) std::swap(tMin, tMax);
+
+    float tYMin = (aabb.minCorner.y - rayOrigin.y) / rayDir.y;
+    float tYMax = (aabb.maxCorner.y - rayOrigin.y) / rayDir.y;
+
+    if (tYMin > tYMax) std::swap(tYMin, tYMax);
+
+    if ((tMin > tYMax) || (tYMin > tMax)) return false;
+
+    if (tYMin > tMin) tMin = tYMin;
+
+    float tZMin = (aabb.minCorner.z - rayOrigin.z) / rayDir.z;
+    float tZMax = (aabb.maxCorner.z - rayOrigin.z) / rayDir.z;
+
+    if (tZMin > tZMax) std::swap(tZMin, tZMax);
+
+    return !(tMin > tZMax || tZMin > tMax);
 }
