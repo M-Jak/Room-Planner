@@ -208,7 +208,7 @@ private:
 
 
 
-struct AABB {
+struct AABB { // todo: remove AABB if decided on not using it
     glm::vec3 minCorner;
     glm::vec3 maxCorner;
 
