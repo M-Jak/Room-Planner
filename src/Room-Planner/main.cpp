@@ -221,21 +221,41 @@ int main()
                     glBindVertexArray(0);
                 }
             }
-            if (walls_created && ImGui::Button("Add test model")) { //generate model add button only if walls are created 
-                ModelData newModel = ourModel;
-                newModel.translate = glm::vec3(models.size() * 1.0f, 0.0f, 0.0f);
-                models.push_back(newModel);
-                newModels++;
+            if (walls_created) {
+                if (ImGui::Button("Add test model")) { //generate model add button only if walls are created 
+                    ModelData newModel = ourModel;
+                    newModel.translate = glm::vec3(models.size() * 1.0f, 0.0f, 0.0f);
+                    models.push_back(newModel);
+                    newModels++;
 
-                if (!currentModel.valid) {
-                    currentModel = models.front();
-                    currentModelIndex = 0;
-                    models.erase(models.begin());
+                    if (!currentModel.valid) {
+                        currentModelIndex = 0;
+                        currentModel = models[currentModelIndex];
+                        models.erase(models.begin());
+                    }
+                    else if (currentModel.valid) {
+                        models.insert(models.begin() + currentModelIndex, currentModel);
+                        currentModel = models[currentModelIndex = models.size() - 1];
+                        models.erase(models.begin() + currentModelIndex);
+                    }
                 }
-                else if (currentModel.valid) {
-                    models.insert(models.begin() + currentModelIndex, currentModel);
-                    currentModel = models[currentModelIndex=models.size()-1];
-                    models.erase(models.begin() + currentModelIndex);
+                if (currentModel.valid && ImGui::Button("Remove current model")) {
+                    if (currentModelIndex > 0) {
+                        currentModelIndex--;
+                        currentModel = models[currentModelIndex];
+                        models.erase(models.begin() + currentModelIndex);
+                    }
+                    else if (currentModelIndex == 0) {
+                        if (models.size() > 0) {
+                            currentModelIndex = 0;
+                            currentModel = models[currentModelIndex];
+                            models.erase(models.begin());
+                        }
+                        else {
+                            currentModelIndex = -1;
+                            currentModel = {};
+                        }
+                    }
                 }
             }
             ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
@@ -400,8 +420,8 @@ void changeCurrentModel(const std::string& direction) {
                 models.erase(models.begin() + currentModelIndex);
             }
             else if(currentModelIndex==-1){
-                currentModel = models.front();
                 currentModelIndex = 0;
+                currentModel = models[currentModelIndex];
                 models.erase(models.begin());
             }
         }
@@ -412,8 +432,8 @@ void changeCurrentModel(const std::string& direction) {
                 models.erase(models.begin() + currentModelIndex);
             }
             else if(currentModelIndex==-1){
-                currentModel = models.back();
                 currentModelIndex = models.size() - 1;
+                currentModel = models[currentModelIndex];
                 models.erase(models.end()-1);
             }
         }
