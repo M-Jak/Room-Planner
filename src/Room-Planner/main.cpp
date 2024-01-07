@@ -226,6 +226,17 @@ int main()
                 newModel.translate = glm::vec3(models.size() * 1.0f, 0.0f, 0.0f);
                 models.push_back(newModel);
                 newModels++;
+
+                if (!currentModel.valid) {
+                    currentModel = models.front();
+                    currentModelIndex = 0;
+                    models.erase(models.begin());
+                }
+                else if (currentModel.valid) {
+                    models.insert(models.begin() + currentModelIndex, currentModel);
+                    currentModel = models[currentModelIndex=models.size()-1];
+                    models.erase(models.begin() + currentModelIndex);
+                }
             }
             ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
 
@@ -233,11 +244,11 @@ int main()
 
             if (imguiMode && currentModel.valid) {
                 if (ImGui::Button("Rotate Left")) {
-                    currentModel.angle -= 5.0f; // Adjust the rotation angle as needed
+                    currentModel.angle -= 5.0f; 
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Rotate Right")) {
-                    currentModel.angle += 5.0f; // Adjust the rotation angle as needed
+                    currentModel.angle += 5.0f; 
                 }
             }
         }
