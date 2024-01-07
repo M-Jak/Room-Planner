@@ -175,9 +175,15 @@ int main()
 
         //add components to imgui window
         {
-            ImGui::Text("Controls:\nShift+LeftClick to enable/disable cursor.\n\nWith cursor disabled:\n\tWASD and mouse to move camera.\n\nWith cursor enabled:\n\tWASD to move current model.\n\tLeft bracket \"[\" to select previous model.\n\tRight bracket \"]\" to select next model.\n\n");
-            ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::Text("Current model index: %d", currentModelIndex);
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Controls:");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Shift+LeftClick to enable/disable cursor.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\nWith cursor disabled:\n\tWASD and mouse to move camera.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\nWith cursor enabled:\n\tWASD to move current model.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tLeft bracket \"[\" to select previous model.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tRight bracket \"]\" to select next model.");
+
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "\n\nApplication avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
 
             
