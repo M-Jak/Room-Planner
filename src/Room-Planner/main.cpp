@@ -272,11 +272,11 @@ int main()
 
             if (imguiMode && currentModel.valid) {
                 if (ImGui::Button("Rotate Left")) {
-                    currentModel.angle -= 5.0f; 
+                    currentModel.angle += 5.0f; 
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Rotate Right")) {
-                    currentModel.angle += 5.0f; 
+                    currentModel.angle -= 5.0f; 
                 }
             }
         }
