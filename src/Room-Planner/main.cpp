@@ -175,9 +175,10 @@ int main()
 
         //add components to imgui window
         {
-            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
-            ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Controls:\nShift+LeftClick to enable/disable cursor.\n\nWith cursor disabled:\n\tWASD and mouse to move camera.\n\nWith cursor enabled:\n\tWASD to move current model.\n\tLeft bracket \"[\" to select previous model.\n\tRight bracket \"]\" to select next model.\n\n");
+            ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
             ImGui::Text("Current model index: %d", currentModelIndex);
+            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
 
             
             // ImGui input fields
@@ -187,6 +188,7 @@ int main()
             length = (length < minLength) ? minLength : length;
             width = (width < minWidth) ? minWidth : width;
             if (!walls_created) {
+                ImGui::Text("Input wall dimensions:\n");
                 ImGui::InputFloat("Length", &length, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
                 ImGui::InputFloat("Width", &width, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
                 if (ImGui::Button("Create walls")) {
