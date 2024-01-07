@@ -144,10 +144,10 @@ int main()
     // load models
     // -----------
     ModelData ourModel = {
-        Model((FileSystem::getPath("resources/objects/cyborg/cyborg.obj"))),
+        Model((FileSystem::getPath("resources/objects/coffeetable/coffeetable.obj"))),
         translate,                  // translation vector
         0.0f,                       // rotation angle
-        glm::vec3(0.3f * 1.0f),     // scaling vector
+        glm::vec3(0.003f * 1.0f),     // scaling vector
         AABB(),
         true,
     };
