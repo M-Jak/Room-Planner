@@ -23,6 +23,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void changeImguiMode(GLFWwindow* window);
 AABB calculateAABB(std::vector<Mesh>& meshes);
+void changeCurrentModel(const std::string& direction);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
@@ -47,7 +48,7 @@ float lastFrame = 0.0f;
 std::vector<ModelData> models;
 //current model -> used to move the current model using wasd when not in camera mode
 ModelData currentModel = {};
-
+int currentModelIndex = -1;
 
 int main()
 {
@@ -176,6 +177,9 @@ int main()
         {
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
             ImGui::Text("Application avg %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Current model index: %d", currentModelIndex);
+
+            
             // ImGui input fields
 
 
@@ -316,6 +320,9 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
+
+static bool leftBracketPressed = false;
+static bool rightBracketPressed = false;
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -331,18 +338,76 @@ void processInput(GLFWwindow* window)
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, deltaTime);
     }
-    else if (imguiMode && currentModel.valid) {
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            currentModel.translate.z -= 1.0f * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            currentModel.translate.z += 1.0f * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            currentModel.translate.x -= 1.0f * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            currentModel.translate.x += 1.0f * deltaTime;
+    else if (imguiMode) {
+        if (currentModel.valid) {
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                currentModel.translate.z -= 1.0f * deltaTime;
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                currentModel.translate.z += 1.0f * deltaTime;
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                currentModel.translate.x -= 1.0f * deltaTime;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                currentModel.translate.x += 1.0f * deltaTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && !leftBracketPressed) {
+            leftBracketPressed = true;
+
+            if (currentModelIndex == -1) {
+                currentModelIndex = 0;
+                currentModel = models[currentModelIndex];
+                models.erase(models.begin());
+            }
+            changeCurrentModel("left");
+        }
+        else if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE) {
+            leftBracketPressed = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && !rightBracketPressed) {
+            rightBracketPressed = true;
+
+            if (currentModelIndex == -1) {
+                currentModelIndex = 0;
+                currentModel = models[currentModelIndex];
+                models.erase(models.begin());
+            }
+            changeCurrentModel("right");
+        }
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE) {
+            rightBracketPressed = false;
+        }
+        
     }
 }
 
+void changeCurrentModel(const std::string& direction) {
+    if (models.size() > 0) {
+        if (direction == "left") {
+            if (currentModelIndex > 0) {
+                models.insert(models.begin() + currentModelIndex, currentModel);
+                currentModel = models[--currentModelIndex];
+                models.erase(models.begin() + currentModelIndex);
+            }
+            else if(currentModelIndex==-1){
+                currentModel = models.front();
+                currentModelIndex = 0;
+                models.erase(models.begin());
+            }
+        }
+        else {
+            if (currentModelIndex > -1 && currentModelIndex < models.size()) {
+                models.insert(models.begin() + currentModelIndex, currentModel);
+                currentModel = models[++currentModelIndex];
+                models.erase(models.begin() + currentModelIndex);
+            }
+            else if(currentModelIndex==-1){
+                currentModel = models.back();
+                currentModelIndex = models.size() - 1;
+                models.erase(models.end()-1);
+            }
+        }
+    }
+}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -397,20 +462,11 @@ void changeImguiMode(GLFWwindow* window)
 
     if (imguiMode) {
         backupCamera = camera;
-        if (models.size() > 0) {
-            currentModel = models.back();
-            models.pop_back();
-            newModels = 0;
-        }
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
     else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         camera = backupCamera;
-        if (currentModel.valid /*&& models.size() > 0*/) {
-            models.insert(models.end() - newModels, currentModel);
-            currentModel = {};
-        }
     }
 }
 
@@ -434,8 +490,5 @@ AABB calculateAABB(std::vector<Mesh>& meshes) {
             maxCorner.z = std::max(maxCorner.z, vertex.Position.z);
         }
     }
-
-
-
     return AABB(minCorner, maxCorner);
 }

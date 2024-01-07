@@ -227,6 +227,14 @@ struct ModelData {
     glm::vec3 maxCorner;*/
 
     bool valid = false; // used in order to check if the model is valid or just a placeholder, since initializing structs to null is not possible
+
+    bool operator==(const ModelData& other) {
+        return this->model.directory == other.model.directory &&
+            this->translate == other.translate &&
+            this->angle == other.angle &&
+            this->scale == other.scale &&
+            this->valid == other.valid;
+    }
 };
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
