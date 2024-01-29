@@ -36,7 +36,7 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
 //imgui mode -> if true we are not moving the camera
-bool shiftKeyPressed = false; //this + mouserightclick activates/deactivates imgui mode
+//bool shiftKeyPressed = false; //this + mouserightclick activates/deactivates imgui mode
 bool imguiMode = false;
 int newModels = 0;
 
@@ -166,6 +166,7 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        
         glfwPollEvents();
 
         //initialize imgui window
@@ -178,19 +179,13 @@ int main()
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Controls:");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Shift+LeftClick to enable/disable cursor.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\nWith cursor disabled:\n\tWASD and mouse to move camera.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tMouse scroll to zoom camera in/out.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\nWith cursor enabled:\n\tWASD to move current model.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tLeft bracket \"[\" to select previous model.");
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tRight bracket \"]\" to select next model.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tRight bracket \"]\" to select next model.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tScroll: Scale model (Hold Shift for vertical movement)");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tShift + Scroll: Move model vertically");
 
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "\n\nApplication avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
-            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
-
-            
-            // ImGui input fields
-
-
-            // Clamp values to minimum values
             length = (length < minLength) ? minLength : length;
             width = (width < minWidth) ? minWidth : width;
             if (!walls_created) {
@@ -211,7 +206,7 @@ int main()
                             length / 2, 3.0f, width / 2,  //top right
                             -length / 2, 3.0f, -width / 2, //bottom left
                             length / 2, 3.0f, -width / 2, //bottom right
-                    };
+                        };
 
                     glBindVertexArray(VAO_walls);
 
@@ -229,6 +224,16 @@ int main()
                     glBindVertexArray(0);
                 }
             }
+
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "\n\nApplication avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
+            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
+
+            
+            // ImGui input fields
+            ImGui::InputFloat("Camera movement speed", &backupCamera.MovementSpeed, 0.5f, 1.5f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
+
+            
             if (walls_created) {
                 if (ImGui::Button("Add test model")) { //generate model add button only if walls are created 
                     ModelData newModel = ourModel;
@@ -278,6 +283,7 @@ int main()
                 if (ImGui::Button("Rotate Right")) {
                     currentModel.angle -= 5.0f; 
                 }
+                ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
             }
         }
         // per-frame time logic
@@ -492,7 +498,24 @@ void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.ProcessMouseScroll(static_cast<float>(yoffset));
+    if (imguiMode && currentModel.valid) {
+      
+        // if shift is held down, scroll is vertical translation
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
+            float translationChange = static_cast<float>(yoffset) * 0.1f; // Adjust the multiplier as needed
+            currentModel.translate.y += translationChange;
+        }
+        else {
+            // If shift key is not held down, scroll is scaling
+            float scaleChange = static_cast<float>(yoffset) * 0.001f;
+            currentModel.scale += glm::vec3(scaleChange);
+            currentModel.scale = glm::max(currentModel.scale, glm::vec3(0.001f));
+        }
+    }
+    else {
+        // If imguiMode is not active, scroll is zoom
+        camera.ProcessMouseScroll(static_cast<float>(yoffset));
+    }
 }
 
 void changeImguiMode(GLFWwindow* window)
