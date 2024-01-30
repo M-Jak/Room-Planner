@@ -27,7 +27,6 @@ void processInput(GLFWwindow* window);
 void changeImguiMode(GLFWwindow* window);
 AABB calculateAABB(std::vector<Mesh>& meshes);
 void changeCurrentModel(const std::string& direction);
-// Function to get a list of files in a directory
 std::vector<std::string> getFilesInDirectory(const std::string& directory);
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -57,12 +56,18 @@ int currentModelIndex = -1;
 
 int main()
 {
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    //char executablePath[1024];
+    //GetModuleFileName(nullptr, executablePath, sizeof(executablePath));
+    //std::string basePath = std::filesystem::path(executablePath).parent_path().parent_path().parent_path().parent_path().string();
+
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -149,7 +154,7 @@ int main()
     glm::vec3 translate(glm::vec3(0.0f, 0.3f * 2.0f, 0.0f));
     // load models
     // -----------
-    std::string objectsFolderPath = "\\Desktop\\kg_vol_2\\Room-Planner\\resources\\objects";
+    std::string objectsFolderPath = (FileSystem::getPath("resources/objects"));
 
     std::vector<std::string> objectFiles = getFilesInDirectory(objectsFolderPath);
 
@@ -159,22 +164,22 @@ int main()
         // Use std::filesystem::path for constructing the correct absolute path
         std::filesystem::path fullPath = std::filesystem::absolute(filePath);
 
-        Model model(fullPath.string()); // Initialize the Model object
-        AABB boundingBox = calculateAABB(model.meshes); // Calculate AABB
-
+        // Initialize the Model object
+        //AABB boundingBox = calculateAABB(model.meshes); // Calculate AABB
+        
         ModelData ourModel = {
-            std::move(model), // Move ownership of the model
+            Model(fullPath.string()), // Move ownership of the model
             glm::vec3(0.0f),
             0.0f,
-            glm::vec3(1.0f),
-            std::move(boundingBox), // Move ownership of the bounding box
+            glm::vec3(0.003 * 1.0f),
+            AABB()/*std::move(boundingBox)*/, // Move ownership of the bounding box
             true
         };
 
         availableModels.push_back(ourModel);
 
         // Optionally, update the bounding box for the current model
-        ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
+        //ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
     }
 
 
@@ -262,21 +267,40 @@ int main()
 
 
             if (walls_created) {
-                if (ImGui::Button("Add test model")) { //generate model add button only if walls are created 
-                    ModelData newModel = currentModel;
-                    newModel.translate = glm::vec3(models.size() * 1.0f, 0.0f, 0.0f);
-                    models.push_back(newModel);
-                    newModels++;
+                static const char* currentItem = nullptr;
+                if (ImGui::BeginCombo("Select Model", currentItem)) {
+                    for (const auto& model : availableModels) {
+                        bool isSelected = (currentItem == model.model.directory.c_str());
+                        if (ImGui::Selectable(model.model.directory.c_str(), isSelected)) {
+                            currentItem = model.model.directory.c_str();
+                            // Set current model based on user selection
+                            // Example: currentModel = model;
+                        }
 
-                    if (!currentModel.valid) {
-                        currentModelIndex = 0;
-                        currentModel = models[currentModelIndex];
-                        models.erase(models.begin());
+                        if (isSelected)
+                            ImGui::SetItemDefaultFocus();
                     }
-                    else if (currentModel.valid) {
-                        models.insert(models.begin() + currentModelIndex, currentModel);
-                        currentModel = models[currentModelIndex = models.size() - 1];
-                        models.erase(models.begin() + currentModelIndex);
+                    ImGui::EndCombo();
+                }
+                // ImGui button to add the selected model
+                if (ImGui::Button("Add Model") && currentItem != nullptr) {
+                    // Find the selected model based on the file path
+                    auto it = std::find_if(availableModels.begin(), availableModels.end(),
+                        [&](const ModelData& model) { return model.model.directory == currentItem; });
+
+                    if (it != availableModels.end()) {
+                        models.push_back(*it);  // Add the selected model to the scene
+
+                        if (!currentModel.valid) {
+                            currentModelIndex = 0;
+                            currentModel = models[currentModelIndex];
+                            models.erase(models.begin());
+                        }
+                        else if (currentModel.valid) {
+                            models.insert(models.begin() + currentModelIndex, currentModel);
+                            currentModel = models[currentModelIndex = models.size() - 1];
+                            models.erase(models.begin() + currentModelIndex);
+                        }
                     }
                 }
                 if (currentModel.valid && ImGui::Button("Remove current model")) {
@@ -299,7 +323,16 @@ int main()
                 }
             }
             ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
-            ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
+            if (imguiMode && currentModel.valid) {
+                if (ImGui::Button("Rotate Left")) {
+                    currentModel.angle += 5.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Rotate Right")) {
+                    currentModel.angle -= 5.0f;
+                }
+                ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
+            }
         }
         // per-frame time logic
         // --------------------
@@ -334,37 +367,6 @@ int main()
         modelShader.use();
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
-
-        static const char* currentItem = nullptr;
-        if (ImGui::BeginCombo("Select Model", currentItem)) {
-            for (const auto& model : availableModels) {
-                bool isSelected = (currentItem == model.model.directory.c_str());
-                if (ImGui::Selectable(model.model.directory.c_str(), isSelected)) {
-                    currentItem = model.model.directory.c_str();
-                    // Set current model based on user selection
-                    // Example: currentModel = model;
-                }
-
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
-
-        // ImGui button to add the selected model
-        if (ImGui::Button("Add Model") && currentItem != nullptr) {
-            // Find the selected model based on the file path
-            auto it = std::find_if(availableModels.begin(), availableModels.end(),
-                [&](const ModelData& model) { return model.model.directory == currentItem; });
-
-            if (it != availableModels.end()) {
-                models.push_back(*it);  // Add the selected model to the scene
-
-                // Update bounding box for the current model
-                currentModel.boundingBox = calculateAABB(models.back().model.meshes);
-            }
-        }
-
 
         // render the loaded models
         glm::mat4 modelMatrix;
@@ -602,7 +604,7 @@ AABB calculateAABB(std::vector<Mesh>& meshes) {
 std::vector<std::string> getFilesInDirectory(const std::string& directory) {
     std::vector<std::string> files;
     try {
-        for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(directory)) {
             if (entry.is_regular_file() && entry.path().extension() == ".obj") {
                 files.push_back(entry.path().string());
             }
