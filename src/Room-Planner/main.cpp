@@ -153,33 +153,27 @@ int main()
 
     glm::vec3 translate(glm::vec3(0.0f, 0.3f * 2.0f, 0.0f));
     // load models
-    // -----------
     std::string objectsFolderPath = (FileSystem::getPath("resources/objects"));
-
     std::vector<std::string> objectFiles = getFilesInDirectory(objectsFolderPath);
 
     // Convert file paths to ModelData objects
     std::vector<ModelData> availableModels;
     for (const auto& filePath : objectFiles) {
-        // Use std::filesystem::path for constructing the correct absolute path
         std::filesystem::path fullPath = std::filesystem::absolute(filePath);
-
-        // Initialize the Model object
-        //AABB boundingBox = calculateAABB(model.meshes); // Calculate AABB
+        
         
         ModelData ourModel = {
-            Model(fullPath.string()), // Move ownership of the model
+            Model(fullPath.generic_string()), 
             glm::vec3(0.0f),
             0.0f,
             glm::vec3(0.003 * 1.0f),
-            AABB()/*std::move(boundingBox)*/, // Move ownership of the bounding box
-            true
+            AABB(),
+            true,
         };
 
         availableModels.push_back(ourModel);
 
-        // Optionally, update the bounding box for the current model
-        //ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
+        ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
     }
 
 
@@ -190,7 +184,6 @@ int main()
     const float minWidth = 5.0f;  // Minimum width value
     const float minHeight = 3.0f; // Minimum height value
 
-    bool printed = false;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -213,8 +206,6 @@ int main()
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tRight bracket \"]\" to select next model.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tScroll: Scale model (Hold Shift for vertical movement)");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tShift + Scroll: Move model vertically");
-
-
 
 
             length = (length < minLength) ? minLength : length;
@@ -388,10 +379,6 @@ int main()
             modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
             currentModel.model.Draw(modelShader);
-            if (!printed)
-                std::printf("min %f %f %f max %f %f %f", currentModel.boundingBox.minCorner.x, currentModel.boundingBox.minCorner.y, currentModel.boundingBox.minCorner.z,
-                    currentModel.boundingBox.maxCorner.x, currentModel.boundingBox.maxCorner.y, currentModel.boundingBox.maxCorner.z);
-            printed = true;
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
