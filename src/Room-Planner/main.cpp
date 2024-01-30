@@ -14,6 +14,9 @@
 #include <learnopengl/camera.h>
 #include <learnopengl/model.h>
 
+#include <filesystem>
+#include <stdexcept>
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -24,6 +27,8 @@ void processInput(GLFWwindow* window);
 void changeImguiMode(GLFWwindow* window);
 AABB calculateAABB(std::vector<Mesh>& meshes);
 void changeCurrentModel(const std::string& direction);
+// Function to get a list of files in a directory
+std::vector<std::string> getFilesInDirectory(const std::string& directory);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
@@ -144,16 +149,34 @@ int main()
     glm::vec3 translate(glm::vec3(0.0f, 0.3f * 2.0f, 0.0f));
     // load models
     // -----------
-    ModelData ourModel = {
-        Model((FileSystem::getPath("resources/objects/coffeetable/coffeetable.obj"))),
-        translate,                  // translation vector
-        0.0f,                       // rotation angle
-        glm::vec3(0.003f * 1.0f),     // scaling vector
-        AABB(),
-        true,
-    };
+    std::string objectsFolderPath = "\\Desktop\\kg_vol_2\\Room-Planner\\resources\\objects";
 
-    ourModel.boundingBox = calculateAABB(ourModel.model.meshes);
+    std::vector<std::string> objectFiles = getFilesInDirectory(objectsFolderPath);
+
+    // Convert file paths to ModelData objects
+    std::vector<ModelData> availableModels;
+    for (const auto& filePath : objectFiles) {
+        // Use std::filesystem::path for constructing the correct absolute path
+        std::filesystem::path fullPath = std::filesystem::absolute(filePath);
+
+        Model model(fullPath.string()); // Initialize the Model object
+        AABB boundingBox = calculateAABB(model.meshes); // Calculate AABB
+
+        ModelData ourModel = {
+            std::move(model), // Move ownership of the model
+            glm::vec3(0.0f),
+            0.0f,
+            glm::vec3(1.0f),
+            std::move(boundingBox), // Move ownership of the bounding box
+            true
+        };
+
+        availableModels.push_back(ourModel);
+
+        // Optionally, update the bounding box for the current model
+        ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
+    }
+
 
     // render loop
     // -----------
@@ -166,7 +189,7 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        
+
         glfwPollEvents();
 
         //initialize imgui window
@@ -185,6 +208,9 @@ int main()
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tRight bracket \"]\" to select next model.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tScroll: Scale model (Hold Shift for vertical movement)");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tShift + Scroll: Move model vertically");
+
+
+
 
             length = (length < minLength) ? minLength : length;
             width = (width < minWidth) ? minWidth : width;
@@ -206,7 +232,7 @@ int main()
                             length / 2, 3.0f, width / 2,  //top right
                             -length / 2, 3.0f, -width / 2, //bottom left
                             length / 2, 3.0f, -width / 2, //bottom right
-                        };
+                    };
 
                     glBindVertexArray(VAO_walls);
 
@@ -228,15 +254,16 @@ int main()
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "\n\nApplication avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
+            ImGui::SliderFloat("Rotation", &currentModel.angle, 0.0f, 360.0f);
 
-            
+
             // ImGui input fields
             ImGui::InputFloat("Camera movement speed", &backupCamera.MovementSpeed, 0.5f, 1.5f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
 
-            
+
             if (walls_created) {
                 if (ImGui::Button("Add test model")) { //generate model add button only if walls are created 
-                    ModelData newModel = ourModel;
+                    ModelData newModel = currentModel;
                     newModel.translate = glm::vec3(models.size() * 1.0f, 0.0f, 0.0f);
                     models.push_back(newModel);
                     newModels++;
@@ -272,19 +299,7 @@ int main()
                 }
             }
             ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
-
-
-
-            if (imguiMode && currentModel.valid) {
-                if (ImGui::Button("Rotate Left")) {
-                    currentModel.angle += 5.0f; 
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Rotate Right")) {
-                    currentModel.angle -= 5.0f; 
-                }
-                ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
-            }
+            ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
         }
         // per-frame time logic
         // --------------------
@@ -319,6 +334,36 @@ int main()
         modelShader.use();
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
+
+        static const char* currentItem = nullptr;
+        if (ImGui::BeginCombo("Select Model", currentItem)) {
+            for (const auto& model : availableModels) {
+                bool isSelected = (currentItem == model.model.directory.c_str());
+                if (ImGui::Selectable(model.model.directory.c_str(), isSelected)) {
+                    currentItem = model.model.directory.c_str();
+                    // Set current model based on user selection
+                    // Example: currentModel = model;
+                }
+
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        // ImGui button to add the selected model
+        if (ImGui::Button("Add Model") && currentItem != nullptr) {
+            // Find the selected model based on the file path
+            auto it = std::find_if(availableModels.begin(), availableModels.end(),
+                [&](const ModelData& model) { return model.model.directory == currentItem; });
+
+            if (it != availableModels.end()) {
+                models.push_back(*it);  // Add the selected model to the scene
+
+                // Update bounding box for the current model
+                currentModel.boundingBox = calculateAABB(models.back().model.meshes);
+            }
+        }
 
 
         // render the loaded models
@@ -421,7 +466,7 @@ void processInput(GLFWwindow* window)
         else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE) {
             rightBracketPressed = false;
         }
-        
+
     }
 }
 
@@ -433,7 +478,7 @@ void changeCurrentModel(const std::string& direction) {
                 currentModel = models[--currentModelIndex];
                 models.erase(models.begin() + currentModelIndex);
             }
-            else if(currentModelIndex==-1){
+            else if (currentModelIndex == -1) {
                 currentModelIndex = 0;
                 currentModel = models[currentModelIndex];
                 models.erase(models.begin());
@@ -445,10 +490,10 @@ void changeCurrentModel(const std::string& direction) {
                 currentModel = models[++currentModelIndex];
                 models.erase(models.begin() + currentModelIndex);
             }
-            else if(currentModelIndex==-1){
+            else if (currentModelIndex == -1) {
                 currentModelIndex = models.size() - 1;
                 currentModel = models[currentModelIndex];
-                models.erase(models.end()-1);
+                models.erase(models.end() - 1);
             }
         }
     }
@@ -499,7 +544,7 @@ void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     if (imguiMode && currentModel.valid) {
-      
+
         // if shift is held down, scroll is vertical translation
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
             float translationChange = static_cast<float>(yoffset) * 0.1f; // Adjust the multiplier as needed
@@ -553,4 +598,18 @@ AABB calculateAABB(std::vector<Mesh>& meshes) {
         }
     }
     return AABB(minCorner, maxCorner);
+}
+std::vector<std::string> getFilesInDirectory(const std::string& directory) {
+    std::vector<std::string> files;
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".obj") {
+                files.push_back(entry.path().string());
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+    }
+    return files;
 }
