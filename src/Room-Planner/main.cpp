@@ -32,6 +32,10 @@ std::vector<std::string> getFilesInDirectory(const std::string& directory);
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
+const float scaleChangeMultiplier = 0.0001f;
+const float translationChangeMultiplier = 0.1f;
+const float rotationChangeMultiplier = 0.1f;
+
 // camera
 Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -45.0f);
 Camera backupCamera;
@@ -250,7 +254,7 @@ int main()
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "\n\nApplication avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
             ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
-            ImGui::SliderFloat("Rotation", &currentModel.angle, 0.0f, 360.0f);
+            ImGui::SliderFloat("Rotation", &currentModel.rotate, 0.0f, 360.0f);
 
 
             // ImGui input fields
@@ -316,11 +320,11 @@ int main()
             ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
             if (imguiMode && currentModel.valid) {
                 if (ImGui::Button("Rotate Left")) {
-                    currentModel.angle += 5.0f;
+                    currentModel.rotate += 5.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Rotate Right")) {
-                    currentModel.angle -= 5.0f;
+                    currentModel.rotate -= 5.0f;
                 }
                 ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
             }
@@ -365,7 +369,7 @@ int main()
             modelMatrix = glm::mat4(1.0f);
             modelMatrix = glm::translate(modelMatrix, translate);
             modelMatrix = glm::translate(modelMatrix, models[i].translate);
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, models[i].scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
             models[i].model.Draw(modelShader);
@@ -375,7 +379,7 @@ int main()
             modelMatrix = glm::mat4(1.0f);
             modelMatrix = glm::translate(modelMatrix, translate);
             modelMatrix = glm::translate(modelMatrix, currentModel.translate);
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(currentModel.angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(currentModel.rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
             currentModel.model.Draw(modelShader);
@@ -536,14 +540,18 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
         // if shift is held down, scroll is vertical translation
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
-            float translationChange = static_cast<float>(yoffset) * 0.1f; // Adjust the multiplier as needed
+            float translationChange = static_cast<float>(yoffset) * translationChangeMultiplier; 
             currentModel.translate.y += translationChange;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
+            float rotationChange = static_cast<float>(yoffset) * rotationChangeMultiplier;
+            currentModel.rotate += rotationChange;
         }
         else {
             // If shift key is not held down, scroll is scaling
-            float scaleChange = static_cast<float>(yoffset) * 0.001f;
+            float scaleChange = static_cast<float>(yoffset) * scaleChangeMultiplier;
             currentModel.scale += glm::vec3(scaleChange);
-            currentModel.scale = glm::max(currentModel.scale, glm::vec3(0.001f));
+            currentModel.scale = glm::max(currentModel.scale, glm::vec3(-10.0f));
         }
     }
     else {

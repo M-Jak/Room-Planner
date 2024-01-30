@@ -219,7 +219,7 @@ struct AABB { // todo: remove AABB if decided on not using it
 struct ModelData {
     Model model;
     glm::vec3 translate;
-    float angle;
+    float rotate;
     glm::vec3 scale;
 
     AABB boundingBox;
@@ -231,7 +231,7 @@ struct ModelData {
     bool operator==(const ModelData& other) {
         return this->model.directory == other.model.directory &&
             this->translate == other.translate &&
-            this->angle == other.angle &&
+            this->rotate == other.rotate &&
             this->scale == other.scale &&
             this->valid == other.valid;
     }
