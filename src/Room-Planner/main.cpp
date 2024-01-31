@@ -208,6 +208,7 @@ int main()
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tRight bracket \"]\" to select next model.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tScroll: Scale model (Hold Shift for vertical movement)");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tShift + Scroll: Move model vertically");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tCtrl + Scroll: Rotate model");
 
 
             length = (length < minLength) ? minLength : length;
@@ -230,7 +231,7 @@ int main()
                             length / 2, 3.0f, width / 2,  //top right
                             -length / 2, 3.0f, -width / 2, //bottom left
                             length / 2, 3.0f, -width / 2, //bottom right
-                    };
+                        };
 
                     glBindVertexArray(VAO_walls);
 
@@ -250,9 +251,7 @@ int main()
             }
 
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "\n\nApplication avg %.3f ms/frame (%.1f FPS)\n\n", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
-            ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
-            ImGui::SliderFloat("Rotation", &currentModel.rotate, 0.0f, 360.0f);
+            
 
 
             // ImGui input fields
@@ -260,6 +259,7 @@ int main()
 
 
             if (walls_created) {
+
                 static const char* currentItem = nullptr;
                 if (ImGui::BeginCombo("Select Model", currentItem)) {
                     for (const auto& model : availableModels) {
@@ -314,18 +314,28 @@ int main()
                         }
                     }
                 }
-            }
-            ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
-            if (imguiMode && currentModel.valid) {
-                if (ImGui::Button("Rotate Left")) {
-                    currentModel.rotate += 5.0f;
+                ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
+                if (imguiMode && currentModel.valid) {
+                    ImGui::SliderFloat("Rotation", &currentModel.rotate, 0.0f, 360.0f);
+                    if (ImGui::Button("Rotate Left")) {
+                        currentModel.rotate += 5.0f;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Rotate Right")) {
+                        currentModel.rotate -= 5.0f;
+                    }
+                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
+                    ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
+                    ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
                 }
-                ImGui::SameLine();
-                if (ImGui::Button("Rotate Right")) {
-                    currentModel.rotate -= 5.0f;
+
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\nReset Application:");
+                if (ImGui::Button("Reset")) {
+                    resetApplication(window);
                 }
-                ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
             }
+
+
         }
         // per-frame time logic
         // --------------------
@@ -383,10 +393,7 @@ int main()
             currentModel.model.Draw(modelShader);
         }
 
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\nReset Application:");
-        if (ImGui::Button("Reset")) {
-            resetApplication(window);
-        }
+        
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
