@@ -160,7 +160,6 @@ int main()
     std::string objectsFolderPath = (FileSystem::getPath("resources/objects"));
     std::vector<std::string> objectFiles = getFilesInDirectory(objectsFolderPath);
 
-    // Convert file paths to ModelData objects
     std::vector<ModelData> availableModels;
     for (const auto& filePath : objectFiles) {
         std::filesystem::path fullPath = std::filesystem::absolute(filePath);
@@ -188,6 +187,12 @@ int main()
     const float minWidth = 5.0f;  // Minimum width value
     const float minHeight = 3.0f; // Minimum height value
 
+    glm::vec3 lightPos(25.0f, 25.0f, 25.0f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 objectColor(1.0f, 1.0f, 1.0f);
+    float ambientStrength = 0.1f;
+    float specularStrength = 0.5f;
+    float shininess = 32.0f;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -354,6 +359,9 @@ int main()
             wallShader.setMat4("projection", projection);
             wallShader.setMat4("view", view);
             wallShader.setMat4("model", glm::mat4(1.0f));
+            wallShader.setVec3("lightPos", lightPos);
+            wallShader.setVec3("viewPos", camera.Position);
+            wallShader.setVec3("lightColor", lightColor);
             glBindVertexArray(VAO_walls);
             glDrawElements(GL_TRIANGLES, wall_indices.size(), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
@@ -362,6 +370,14 @@ int main()
         modelShader.use();
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
+        modelShader.setVec3("lightPos", lightPos);
+        modelShader.setVec3("viewPos", camera.Position);
+        modelShader.setVec3("lightColor", lightColor);
+        modelShader.setVec3("objectColor", objectColor);
+        modelShader.setFloat("ambientStrength", ambientStrength);
+        modelShader.setFloat("specularStrength", specularStrength);
+        modelShader.setFloat("shininess", shininess);
+        
 
         // render the loaded models
         glm::mat4 modelMatrix;
@@ -372,6 +388,7 @@ int main()
             modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, models[i].scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
+
             models[i].model.Draw(modelShader);
         }
         // render the current model
@@ -382,6 +399,7 @@ int main()
             modelMatrix = glm::rotate(modelMatrix, glm::radians(currentModel.rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
             modelShader.setMat4("model", modelMatrix);
+
             currentModel.model.Draw(modelShader);
         }
         ImGui::Render();
