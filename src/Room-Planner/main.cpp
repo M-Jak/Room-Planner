@@ -128,6 +128,7 @@ int main()
     float length = 0.0f, width = 0.0f;
     bool walls_created = false;
     float* wall_vertices;
+    std::vector<float> wallVertices;
     GLuint VAO_walls, VBO_walls, EBO_walls;
     glGenVertexArrays(1, &VAO_walls);
     glGenBuffers(1, &VBO_walls);
@@ -196,6 +197,7 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        
 
         glfwPollEvents();
 
@@ -225,31 +227,67 @@ int main()
                 ImGui::InputFloat("Width", &width, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
                 if (ImGui::Button("Create walls")) {
                     walls_created = true;
-                    wall_vertices = new float[24] {
-                        //floor points
-                        -length / 2, 0.0f, width / 2, //top left
-                            length / 2, 0.0f, width / 2,  //top right
-                            -length / 2, 0.0f, -width / 2, //bottom left
-                            length / 2, 0.0f, -width / 2, //bottom right
+                    wallVertices = {
+                        // floor vertices
+                        -length / 2, 0.0f, width / 2, 0.0f, 1.0f, 0.0f, // top left
+                        length / 2, 0.0f, width / 2, 0.0f, 1.0f, 0.0f, // top right
+                        -length / 2, 0.0f, -width / 2, 0.0f, 1.0f, 0.0f, // bottom left
 
-                            //roof points
-                            -length / 2, 3.0f, width / 2, //top left
-                            length / 2, 3.0f, width / 2,  //top right
-                            -length / 2, 3.0f, -width / 2, //bottom left
-                            length / 2, 3.0f, -width / 2, //bottom right
+                        length / 2, 0.0f, -width / 2, 0.0f, 1.0f, 0.0f, // bottom right
+                        -length / 2, 0.0f, -width / 2, 0.0f, 1.0f, 0.0f, // bottom left
+                        length / 2, 0.0f, width / 2, 0.0f, 1.0f, 0.0f, // top right
+
+                        // front wall
+                        -length / 2, 0.0f, width / 2, 0.0f, 0.0f, 1.0f, // bottom left
+                        length / 2, 0.0f, width / 2, 0.0f, 0.0f, 1.0f, // bottom right
+                        -length / 2, 3.0f, width / 2, 0.0f, 0.0f, 1.0f, // top left
+
+                        length / 2, 0.0f, width / 2, 0.0f, 0.0f, 1.0f, // bottom right
+                        length / 2, 3.0f, width / 2, 0.0f, 0.0f, 1.0f, // top right
+                        -length / 2, 3.0f, width / 2, 0.0f, 0.0f, 1.0f, // top left
+
+                        // rear wall
+                        -length / 2, 0.0f, -width / 2, 0.0f, 0.0f, -1.0f, // bottom left
+                        length / 2, 0.0f, -width / 2, 0.0f, 0.0f, -1.0f, // bottom right
+                        -length / 2, 3.0f, -width / 2, 0.0f, 0.0f, -1.0f, // top left
+
+                        length / 2, 0.0f, -width / 2, 0.0f, 0.0f, -1.0f, // bottom right
+                        length / 2, 3.0f, -width / 2, 0.0f, 0.0f, -1.0f, // top right
+                        -length / 2, 3.0f, -width / 2, 0.0f, 0.0f, -1.0f, // top left
+
+                        // left wall
+                        -length / 2, 0.0f, width / 2, -1.0f, 0.0f, 0.0f, // bottom front
+                        -length / 2, 3.0f, width / 2, -1.0f, 0.0f, 0.0f, // top front
+                        -length / 2, 0.0f, -width / 2, -1.0f, 0.0f, 0.0f, // bottom rear
+
+                        -length / 2, 3.0f, width / 2, -1.0f, 0.0f, 0.0f, // top front
+                        -length / 2, 3.0f, -width / 2, -1.0f, 0.0f, 0.0f, // top rear
+                        -length / 2, 0.0f, -width / 2, -1.0f, 0.0f, 0.0f, // bottom rear
+
+                        // right wall
+                        length / 2, 0.0f, width / 2, 1.0f, 0.0f, 0.0f, // bottom front
+                        length / 2, 3.0f, width / 2, 1.0f, 0.0f, 0.0f, // top front
+                        length / 2, 0.0f, -width / 2, 1.0f, 0.0f, 0.0f, // bottom rear
+
+                        length / 2, 3.0f, width / 2, 1.0f, 0.0f, 0.0f, // top front
+                        length / 2, 3.0f, -width / 2, 1.0f, 0.0f, 0.0f, // top rear
+                        length / 2, 0.0f, -width / 2, 1.0f, 0.0f, 0.0f, // bottom rear
                     };
 
                     glBindVertexArray(VAO_walls);
 
                     glBindBuffer(GL_ARRAY_BUFFER, VBO_walls);
-                    glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), wall_vertices, GL_STATIC_DRAW);
+                    glBufferData(GL_ARRAY_BUFFER, wallVertices.size() * sizeof(float), wallVertices.data(), GL_STATIC_DRAW);
 
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_walls);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wall_indices) * sizeof(GLuint), wall_indices.data(), GL_STATIC_DRAW);
+                    /*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_walls);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wall_indices) * sizeof(GLuint), wall_indices.data(), GL_STATIC_DRAW);*/
 
                     wallShader.use();
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
                     glEnableVertexAttribArray(0);
+
+                    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+                    glEnableVertexAttribArray(1);
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
@@ -340,6 +378,8 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        lightPos.x = 25.0f * glm::cos(glm::radians(25.0f * currentFrame));
+        lightPos.z = 25.0f * glm::sin(glm::radians(25.0f * currentFrame));
 
         // input
         // -----
@@ -363,7 +403,7 @@ int main()
             wallShader.setVec3("viewPos", camera.Position);
             wallShader.setVec3("lightColor", lightColor);
             glBindVertexArray(VAO_walls);
-            glDrawElements(GL_TRIANGLES, wall_indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawArrays(GL_TRIANGLES, 0, wallVertices.size() / 3);
             glBindVertexArray(0);
         }
 
