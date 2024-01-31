@@ -28,13 +28,10 @@ void changeImguiMode(GLFWwindow* window);
 AABB calculateAABB(std::vector<Mesh>& meshes);
 void changeCurrentModel(const std::string& direction);
 std::vector<std::string> getFilesInDirectory(const std::string& directory);
+void resetApplication(GLFWwindow* window);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
-
-const float scaleChangeMultiplier = 0.0001f;
-const float translationChangeMultiplier = 0.1f;
-const float rotationChangeMultiplier = 0.1f;
 
 // camera
 Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -45.0f);
@@ -57,6 +54,7 @@ std::vector<ModelData> models;
 //current model -> used to move the current model using wasd when not in camera mode
 ModelData currentModel = {};
 int currentModelIndex = -1;
+bool walls_created = false;
 
 int main()
 {
@@ -126,7 +124,7 @@ int main()
     Shader modelShader("model_vertex.vert", "model_fragment.frag");
 
     float length = 0.0f, width = 0.0f;
-    bool walls_created = false;
+    //bool walls_created = false;
     float* wall_vertices;
     GLuint VAO_walls, VBO_walls, EBO_walls;
     glGenVertexArrays(1, &VAO_walls);
@@ -164,10 +162,10 @@ int main()
     std::vector<ModelData> availableModels;
     for (const auto& filePath : objectFiles) {
         std::filesystem::path fullPath = std::filesystem::absolute(filePath);
-        
-        
+
+
         ModelData ourModel = {
-            Model(fullPath.generic_string()), 
+            Model(fullPath.generic_string()),
             glm::vec3(0.0f),
             0.0f,
             glm::vec3(0.003 * 1.0f),
@@ -384,6 +382,12 @@ int main()
             modelShader.setMat4("model", modelMatrix);
             currentModel.model.Draw(modelShader);
         }
+
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\nReset Application:");
+        if (ImGui::Button("Reset")) {
+            resetApplication(window);
+        }
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -540,18 +544,14 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
         // if shift is held down, scroll is vertical translation
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
-            float translationChange = static_cast<float>(yoffset) * translationChangeMultiplier; 
+            float translationChange = static_cast<float>(yoffset) * 0.1f; // Adjust the multiplier as needed
             currentModel.translate.y += translationChange;
-        }
-        else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-            float rotationChange = static_cast<float>(yoffset) * rotationChangeMultiplier;
-            currentModel.rotate += rotationChange;
         }
         else {
             // If shift key is not held down, scroll is scaling
-            float scaleChange = static_cast<float>(yoffset) * scaleChangeMultiplier;
+            float scaleChange = static_cast<float>(yoffset) * 0.001f;
             currentModel.scale += glm::vec3(scaleChange);
-            currentModel.scale = glm::max(currentModel.scale, glm::vec3(-10.0f));
+            currentModel.scale = glm::max(currentModel.scale, glm::vec3(0.001f));
         }
     }
     else {
@@ -609,4 +609,23 @@ std::vector<std::string> getFilesInDirectory(const std::string& directory) {
         std::cerr << "Filesystem error: " << e.what() << std::endl;
     }
     return files;
+}
+void resetApplication(GLFWwindow* window) {
+    // Reset camera position and orientation
+    camera = Camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -45.0f);
+
+    // Reset model data
+    models.clear();
+    currentModel = {};
+    currentModelIndex = -1;
+    newModels = 0;
+
+    // Reset wall creation state
+    walls_created = false;
+
+    // Reset ImGui mode
+    imguiMode = false;
+
+    // Reset input mode to capture mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
