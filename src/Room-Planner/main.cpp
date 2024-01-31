@@ -188,12 +188,20 @@ int main()
     const float minWidth = 5.0f;  // Minimum width value
     const float minHeight = 3.0f; // Minimum height value
 
-    glm::vec3 lightPos(25.0f, 25.0f, 25.0f);
-    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
     glm::vec3 objectColor(1.0f, 1.0f, 1.0f);
-    float ambientStrength = 0.1f;
-    float specularStrength = 0.5f;
-    float shininess = 32.0f;
+
+    glm::vec3 lightPos1(-25.0f, 25.0f, -25.0f);
+    glm::vec3 lightColor1(1.0f, 1.0f, 1.0f);
+    float ambientStrength1 = 0.1f;
+    float specularStrength1 = 0.5f;
+    float shininess1 = 32.0f;
+
+    glm::vec3 lightPos2(25.0f, 25.0f, 25.0f);
+    glm::vec3 lightColor2(1.0f, 1.0f, 1.0f);
+    float ambientStrength2 = 0.05f;
+    float specularStrength2 = 0.25f;
+    float shininess2 = 16.0f;
+
 
     while (!glfwWindowShouldClose(window))
     {
@@ -373,8 +381,6 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        lightPos.x = 25.0f * glm::cos(glm::radians(25.0f * currentFrame));
-        lightPos.z = 25.0f * glm::sin(glm::radians(25.0f * currentFrame));
 
         // input
         // -----
@@ -394,9 +400,14 @@ int main()
             wallShader.setMat4("projection", projection);
             wallShader.setMat4("view", view);
             wallShader.setMat4("model", glm::mat4(1.0f));
-            wallShader.setVec3("lightPos", lightPos);
             wallShader.setVec3("viewPos", camera.Position);
-            wallShader.setVec3("lightColor", lightColor);
+
+            wallShader.setVec3("lightPos1", lightPos1);
+            wallShader.setVec3("lightColor1", lightColor1);
+
+            wallShader.setVec3("lightPos2", lightPos2);
+            wallShader.setVec3("lightColor2", lightColor2);
+
             glBindVertexArray(VAO_walls);
             glDrawArrays(GL_TRIANGLES, 0, wallVertices.size() / 3);
             glBindVertexArray(0);
@@ -405,13 +416,15 @@ int main()
         modelShader.use();
         modelShader.setMat4("projection", projection);
         modelShader.setMat4("view", view);
-        modelShader.setVec3("lightPos", lightPos);
         modelShader.setVec3("viewPos", camera.Position);
-        modelShader.setVec3("lightColor", lightColor);
         modelShader.setVec3("objectColor", objectColor);
-        modelShader.setFloat("ambientStrength", ambientStrength);
-        modelShader.setFloat("specularStrength", specularStrength);
-        modelShader.setFloat("shininess", shininess);
+
+        modelShader.setVec3("lightPos", lightPos1);
+        modelShader.setVec3("lightColor", lightColor1);
+        modelShader.setFloat("ambientStrength", ambientStrength1);
+        modelShader.setFloat("specularStrength", specularStrength1);
+        modelShader.setFloat("shininess", shininess1);
+        
         
 
         // render the loaded models
