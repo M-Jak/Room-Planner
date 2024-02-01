@@ -32,6 +32,10 @@ void resetApplication(GLFWwindow* window);
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
+const float translationCoef = 0.05f;
+const float rotationCoef = 0.5f;
+const float scaleCoef = 0.001f;
+
 
 // camera
 Camera camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -45.0f);
@@ -168,7 +172,7 @@ int main()
             Model(fullPath.generic_string()),
             glm::vec3(0.0f),
             0.0f,
-            glm::vec3(0.003 * 1.0f),
+            glm::vec3(0.003f * 1.0f),
             AABB(),
             true,
         };
@@ -360,7 +364,7 @@ int main()
                         }
                     }
                 }
-                ImGui::Text("Currently loaded %d test models", currentModel.valid ? models.size() + 1 : models.size());
+                ImGui::Text("Currently loaded %d %s", currentModel.valid ? models.size() + 1 : models.size(), currentModel.valid ? models.size()==0 ? "model." : "models." : models.size() == 1 ? "model." : "models.");
                 if (imguiMode && currentModel.valid) {
                     ImGui::SliderFloat("Rotation", &currentModel.rotate, 0.0f, 360.0f);
                     if (ImGui::Button("Rotate Left")) {
@@ -371,7 +375,6 @@ int main()
                         currentModel.rotate -= 5.0f;
                     }
                     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Current model index: %d", currentModelIndex);
-                    ImGui::SliderFloat3("Translation", &translate.x, -100.0f, 100.0f);
                     ImGui::Text("Current Model Scale: %.30f, %.30f, %.30f", currentModel.scale.x, currentModel.scale.y, currentModel.scale.z);
                 }
 
@@ -617,14 +620,18 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
         // if shift is held down, scroll is vertical translation
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
-            float translationChange = static_cast<float>(yoffset) * 0.1f; // Adjust the multiplier as needed
+            float translationChange = static_cast<float>(yoffset) * translationCoef; // Adjust the multiplier as needed
             currentModel.translate.y += translationChange;
         }
-        else {
-            // If shift key is not held down, scroll is scaling
-            float scaleChange = static_cast<float>(yoffset) * 0.001f;
+        else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
+            float rotationChange = static_cast<float>(yoffset) * rotationCoef;
+            currentModel.rotate += rotationChange;
+            currentModel.rotate = currentModel.rotate < 0.0f ? 0.0f : currentModel.rotate > 360.0f ? 360.0f : currentModel.rotate;
+        }
+        else { // If shift key is not held down, scroll is scaling
+            float scaleChange = static_cast<float>(yoffset) * scaleCoef;
             currentModel.scale += glm::vec3(scaleChange);
-            currentModel.scale = glm::max(currentModel.scale, glm::vec3(0.001f));
+            currentModel.scale = glm::max(currentModel.scale, glm::vec3(0.0001f));
         }
     }
     else {
