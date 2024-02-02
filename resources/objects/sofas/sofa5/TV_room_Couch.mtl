@@ -1,0 +1,47 @@
+# Blender MTL File: 'TV room Couch.blend'
+# Material Count: 4
+
+newmtl Drk_Wood
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd -s 10.000000 10.000000 10.000000 Mats\\woodfull\\Wood drk\\Color.jpg
+map_Ns Mats\\woodfull\\Wood drk\\Roughness.jpg
+
+newmtl Label
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\hdean\\Desktop\\KO stores\\SimpFurn\\tag.jpg
+
+newmtl Orange_Leather_simple
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.046232 0.046232 0.046232
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd -s 7.000000 7.000000 7.000000 Mats\\Leather\\tv room orange_Leather_Simple_06_diff.jpg
+
+newmtl UnderMesh
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+refl Mats\\Bottom_mesh_fabric\\metallic.png
