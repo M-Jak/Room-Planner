@@ -452,7 +452,8 @@ int main()
             modelMatrix = glm::translate(modelMatrix, models[i].translate);
             modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, models[i].scale);	// it's a bit too big for our scene, so scale it down
-            modelShader.setMat4("model", modelMatrix);
+            //modelShader.setVec3("scale", models[i].scale);
+            simpleDepthShader.setMat4("model", modelMatrix);
 
             models[i].model.Draw(simpleDepthShader);
         }
@@ -463,7 +464,7 @@ int main()
             modelMatrix = glm::translate(modelMatrix, currentModel.translate);
             modelMatrix = glm::rotate(modelMatrix, glm::radians(currentModel.rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, currentModel.scale);	// it's a bit too big for our scene, so scale it down
-            modelShader.setMat4("model", modelMatrix);
+            simpleDepthShader.setMat4("model", modelMatrix);
 
             currentModel.model.Draw(simpleDepthShader);
         }

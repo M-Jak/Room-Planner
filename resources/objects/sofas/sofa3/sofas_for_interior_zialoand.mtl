@@ -1,0 +1,63 @@
+# Blender 3.1.0 MTL File: 'sofas_for_interior_zialoand.blend'
+# www.blender.org
+
+newmtl Fabric_01
+    Ns 360.000000
+    Ka 1.000000 1.000000 1.000000
+    Kd 0.800000 0.800000 0.800000
+    Ks 0.500000 0.500000 0.500000
+    Ke 0.000000 0.000000 0.000000
+    Ni 1.450000
+    d 1.000000
+    illum 2
+    map_Kd  Fabric036_4K_Color.png
+    map_Ns  Fabric036_4K_Roughness.png
+    map_Bump  -bm 1.000000 Fabric036_4K_NormalGL.png 
+
+newmtl Fabric_02
+    Ns 250.000000
+    Ka 1.000000 1.000000 1.000000
+    Kd 0.800000 0.800000 0.800000
+    Ks 0.500000 0.500000 0.500000
+    Ke 0.000000 0.000000 0.000000
+    Ni 1.450000
+    d 1.000000
+    illum 2
+    map_Kd  Fabric036_4K_Color.png
+    map_Ns  Fabric036_4K_Roughness.png
+    map_Bump  -bm 1.000000 Fabric036_4K_NormalGL.png
+
+newmtl Fabric_03
+    Ns 250.000000
+    Ka 1.000000 1.000000 1.000000
+    Kd 0.800000 0.800000 0.800000
+    Ks 0.500000 0.500000 0.500000
+    Ke 0.000000 0.000000 0.000000
+    Ni 1.450000
+    d 1.000000
+    illum 2
+    map_Ks  4K-fabric_33-specular.jpg
+    map_Bump  -bm 1.000000 4K-fabric_33-normal.jpg
+
+newmtl Material.001
+    Ns 250.000000
+    Ka 1.000000 1.000000 1.000000
+    Kd 0.006370 0.006370 0.006370
+    Ks 0.500000 0.500000 0.500000
+    Ke 0.000000 0.000000 0.000000
+    Ni 1.450000
+    d 1.000000
+    illum 2
+
+newmtl Woood
+    Ns 250.000000
+    Ka 1.000000 1.000000 1.000000
+    Kd 0.800000 0.800000 0.800000
+    Ks 0.500000 0.500000 0.500000
+    Ke 0.000000 0.000000 0.000000
+    Ni 1.450000
+    d 1.000000
+    illum 2
+    map_Kd  Wood051_4K_Color.png
+    map_Ns  Wood051_4K_Roughness.png
+    map_Bump  -bm 1.000000 Wood051_4K_NormalDX.png
