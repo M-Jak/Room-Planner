@@ -1,7 +1,7 @@
 namespace glm
 {
 	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER T angle(qua<T, Q> const& x)
+	GLM_FUNC_QUALIFIER T currentFrame(qua<T, Q> const& x)
 	{
 		return acos(x.w) * static_cast<T>(2);
 	}
