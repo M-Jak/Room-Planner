@@ -13,14 +13,13 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 lightSpaceMatrix;
-uniform vec3 scale;
 
 void main()
 {
     TexCoords = aTexCoords;
     
     FragPos = vec3(model * vec4(aPos, 1.0));
-    Normal = (transpose(inverse(mat3(model))) * aNormal);
+    Normal = transpose(inverse(mat3(model))) * aNormal;
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 
     gl_Position = projection * view * vec4(FragPos, 1.0);
