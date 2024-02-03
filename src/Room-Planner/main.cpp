@@ -232,6 +232,8 @@ int main()
     
     modelShader.use();
     modelShader.setInt("shadowMap", 1);
+    wallShader.use();
+    wallShader.setInt("shadowMap", 1);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -336,7 +338,9 @@ int main()
 
             // ImGui input fields
             ImGui::InputFloat("Camera movement speed", &backupCamera.MovementSpeed, 0.5f, 1.5f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
-
+            ImGui::SliderFloat("Light position X", &lightPos1.x, -360.0f, 360.0f);
+            ImGui::SliderFloat("Light position Y", &lightPos1.y, -360.0f, 360.0f);
+            ImGui::SliderFloat("Light position Z", &lightPos1.z, -360.0f, 360.0f);
 
             if (walls_created) {
 
@@ -452,7 +456,6 @@ int main()
             modelMatrix = glm::translate(modelMatrix, models[i].translate);
             modelMatrix = glm::rotate(modelMatrix, glm::radians(models[i].rotate), glm::vec3(0.0f, 1.0f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, models[i].scale);	// it's a bit too big for our scene, so scale it down
-            //modelShader.setVec3("scale", models[i].scale);
             simpleDepthShader.setMat4("model", modelMatrix);
 
             models[i].model.Draw(simpleDepthShader);
@@ -468,6 +471,24 @@ int main()
 
             currentModel.model.Draw(simpleDepthShader);
         }
+        if (walls_created) {
+            //wallShader.use();
+            //simpleDepthShader.setMat4("projection", projection);
+            //simpleDepthShader.setMat4("view", view);
+            simpleDepthShader.setMat4("model", glm::mat4(1.0f));
+            //simpleDepthShader.setVec3("viewPos", camera.Position);
+
+            //simpleDepthShader.setVec3("lightPos", lightPos1);
+            //simpleDepthShader.setVec3("lightColor", lightColor1);
+
+            //simpleDepthShader.setVec3("lightPos2", lightPos2);
+            //simpleDepthShader.setVec3("lightColor2", lightColor2);
+
+            glBindVertexArray(VAO_walls);
+            glDrawArrays(GL_TRIANGLES, 0, wallVertices.size() / 3);
+            glBindVertexArray(0);
+        }
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // reset viewport
@@ -496,6 +517,8 @@ int main()
 
             wallShader.setVec3("lightPos2", lightPos2);
             wallShader.setVec3("lightColor2", lightColor2);
+
+            wallShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
             glBindVertexArray(VAO_walls);
             glDrawArrays(GL_TRIANGLES, 0, wallVertices.size() / 3);
