@@ -196,7 +196,7 @@ int main()
 
     glm::vec3 objectColor(1.0f, 1.0f, 1.0f);
 
-    glm::vec3 lightPos1(-5.0f, 5.0f, -5.0f);
+    glm::vec3 lightPos1(1.0f, 4.0f, 3.0f);
     glm::vec3 lightColor1(1.0f, 1.0f, 1.0f);
     float ambientStrength1 = 0.1f;
     float specularStrength1 = 0.5f;
@@ -472,17 +472,7 @@ int main()
             currentModel.model.Draw(simpleDepthShader);
         }
         if (walls_created) {
-            //wallShader.use();
-            //simpleDepthShader.setMat4("projection", projection);
-            //simpleDepthShader.setMat4("view", view);
             simpleDepthShader.setMat4("model", glm::mat4(1.0f));
-            //simpleDepthShader.setVec3("viewPos", camera.Position);
-
-            //simpleDepthShader.setVec3("lightPos", lightPos1);
-            //simpleDepthShader.setVec3("lightColor", lightColor1);
-
-            //simpleDepthShader.setVec3("lightPos2", lightPos2);
-            //simpleDepthShader.setVec3("lightColor2", lightColor2);
 
             glBindVertexArray(VAO_walls);
             glDrawArrays(GL_TRIANGLES, 0, wallVertices.size() / 3);
