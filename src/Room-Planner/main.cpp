@@ -253,8 +253,8 @@ int main()
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\nWith cursor disabled:\n\tWASD and mouse to move camera.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tMouse scroll to zoom camera in/out.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\nWith cursor enabled:\n\tWASD to move current model.");
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tLeft bracket \"[\" to select previous model.");
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tRight bracket \"]\" to select next model.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tLeft Arrow to select previous model.");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tRight Arrow to select next model.");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\n\tScroll: Scale model (Hold Shift for vertical movement)");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tShift + Scroll: Move model vertically");
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "\tCtrl + Scroll: Rotate model");
@@ -578,8 +578,8 @@ int main()
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 
-static bool leftBracketPressed = false;
-static bool rightBracketPressed = false;
+static bool leftArrowPressed = false;
+static bool rightArrowPressed = false;
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -606,8 +606,8 @@ void processInput(GLFWwindow* window)
             if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
                 currentModel.translate.x += 1.0f * deltaTime;
         }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && !leftBracketPressed) {
-            leftBracketPressed = true;
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS && !leftArrowPressed) {
+            leftArrowPressed = true;
 
             if (currentModelIndex == -1) {
                 currentModelIndex = 0;
@@ -616,12 +616,12 @@ void processInput(GLFWwindow* window)
             }
             changeCurrentModel("left");
         }
-        else if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE) {
-            leftBracketPressed = false;
+        else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
+            leftArrowPressed = false;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && !rightBracketPressed) {
-            rightBracketPressed = true;
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS && !rightArrowPressed) {
+            rightArrowPressed = true;
 
             if (currentModelIndex == -1) {
                 currentModelIndex = 0;
@@ -630,8 +630,8 @@ void processInput(GLFWwindow* window)
             }
             changeCurrentModel("right");
         }
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE) {
-            rightBracketPressed = false;
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE) {
+            rightArrowPressed = false;
         }
 
     }
