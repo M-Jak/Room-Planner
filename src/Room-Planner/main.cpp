@@ -34,7 +34,8 @@ const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 const float translationCoef = 0.05f;
 const float rotationCoef = 0.5f;
-const float scaleCoef = 0.0005f;
+const float scaleCoef = 0.00035f;
+bool antialiasing = true;
 
 
 // camera
@@ -71,11 +72,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    //char executablePath[1024];
-    //GetModuleFileName(nullptr, executablePath, sizeof(executablePath));
-    //std::string basePath = std::filesystem::path(executablePath).parent_path().parent_path().parent_path().parent_path().string();
-
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -91,6 +88,7 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -123,6 +121,8 @@ int main()
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+
 
     // build and compile shaders
     // -------------------------
@@ -176,7 +176,7 @@ int main()
             Model(fullPath.generic_string()),
             glm::vec3(0.0f),
             0.0f,
-            glm::vec3(0.01f*1.0f),
+            glm::vec3(0.05f*1.0f),
             AABB(),
             true,
         };
@@ -341,7 +341,12 @@ int main()
             ImGui::SliderFloat("Light position X", &lightPos1.x, -360.0f, 360.0f);
             ImGui::SliderFloat("Light position Y", &lightPos1.y, -360.0f, 360.0f);
             ImGui::SliderFloat("Light position Z", &lightPos1.z, -360.0f, 360.0f);
-
+            if (ImGui::Button("Toggle anti-aliasing")) {
+                antialiasing = !antialiasing;
+                if (antialiasing)
+                    glEnable(GL_MULTISAMPLE);
+                else glDisable(GL_MULTISAMPLE);
+            }
             if (walls_created) {
 
                 static const char* currentItem = nullptr;
