@@ -152,3 +152,12 @@ foreach(CHAPTER "Room-Planner")
 endforeach(CHAPTER)
 
 include_directories(${CMAKE_SOURCE_DIR}/includes ${CMAKE_SOURCE_DIR}/includes/imgui ${CMAKE_SOURCE_DIR}/includes/imgui/misc/debugger ${CMAKE_SOURCE_DIR}/includes/imgui/backends)
+
+add_custom_command(
+    TARGET Room-Planner POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/resources" "$<TARGET_FILE_DIR:Room-Planner>/resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/dlls" "$<TARGET_FILE_DIR:Room-Planner>"
+    COMMENT "Copying resources and DLLs to output directory"
+)
