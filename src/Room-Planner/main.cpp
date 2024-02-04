@@ -164,7 +164,11 @@ int main()
 
     glm::vec3 translate(glm::vec3(0.0f, 0.3f * 2.0f, 0.0f));
     // load models
+#ifdef NDEBUG
+    std::string objectsFolderPath = "resources/objects";
+#else
     std::string objectsFolderPath = (FileSystem::getPath("resources/objects"));
+#endif
     std::vector<std::string> objectFiles = getFilesInDirectory(objectsFolderPath);
 
     std::vector<ModelData> availableModels;
