@@ -161,3 +161,5 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/dlls" "$<TARGET_FILE_DIR:Room-Planner>"
     COMMENT "Copying resources and DLLs to output directory"
 )
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Room-Planner)
