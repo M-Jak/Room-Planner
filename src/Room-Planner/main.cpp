@@ -62,7 +62,6 @@ int currentModelIndex = -1;
 bool walls_created = false;
 
 
-
 int main()
 {
 
@@ -133,33 +132,11 @@ int main()
 
     float length = 0.0f, width = 0.0f;
     //bool walls_created = false;
-    float* wall_vertices;
     std::vector<float> wallVertices;
     GLuint VAO_walls, VBO_walls, EBO_walls;
     glGenVertexArrays(1, &VAO_walls);
     glGenBuffers(1, &VBO_walls);
     glGenBuffers(1, &EBO_walls);
-
-
-
-    std::vector<GLuint> wall_indices{
-        //face wall
-        2,3,7,
-        2,6,7,
-        //rear wall
-        0,1,5,
-        0,4,5,
-        //left wall
-        0,2,6,
-        0,4,6,
-        //right wall
-        1,3,7,
-        1,5,7,
-        //floor
-        0,1,2,
-        1,2,3
-    };
-
 
 
     glm::vec3 translate(glm::vec3(0.0f, 0.3f * 2.0f, 0.0f));
@@ -181,13 +158,12 @@ int main()
             glm::vec3(0.0f),
             0.0f,
             glm::vec3(0.05f*1.0f),
-            AABB(),
             true,
         };
 
         availableModels.push_back(ourModel);
 
-        ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
+        //ourModel.boundingBox = calculateAABB(currentModel.model.meshes);
     }
 
 
@@ -584,6 +560,7 @@ int main()
     return 0;
 }
 
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 
@@ -646,6 +623,7 @@ void processInput(GLFWwindow* window)
     }
 }
 
+
 void changeCurrentModel(const std::string& direction) {
     if (models.size() > 0) {
         if (direction == "left") {
@@ -675,6 +653,7 @@ void changeCurrentModel(const std::string& direction) {
     }
 }
 
+
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -683,6 +662,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
+
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
@@ -708,12 +688,14 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 }
 
+
 void mouse_btn_callback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
         changeImguiMode(window);
     }
 }
+
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
@@ -743,6 +725,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     }
 }
 
+
 void changeImguiMode(GLFWwindow* window)
 {
     imguiMode = !imguiMode;
@@ -756,6 +739,7 @@ void changeImguiMode(GLFWwindow* window)
         camera = backupCamera;
     }
 }
+
 
 AABB calculateAABB(std::vector<Mesh>& meshes) {
     glm::vec3 minCorner(std::numeric_limits<float>::max());
@@ -779,6 +763,8 @@ AABB calculateAABB(std::vector<Mesh>& meshes) {
     }
     return AABB(minCorner, maxCorner);
 }
+
+
 std::vector<std::string> getFilesInDirectory(const std::string& directory) {
     std::vector<std::string> files;
     try {
@@ -793,6 +779,8 @@ std::vector<std::string> getFilesInDirectory(const std::string& directory) {
     }
     return files;
 }
+
+
 void resetApplication(GLFWwindow* window) {
     // Reset camera position and orientation
     camera = Camera(glm::vec3(0.0f, 7.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -45.0f);

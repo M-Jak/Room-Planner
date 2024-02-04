@@ -206,9 +206,7 @@ private:
     }
 };
 
-
-
-struct AABB { // todo: remove AABB if decided on not using it
+struct AABB { 
     glm::vec3 minCorner;
     glm::vec3 maxCorner;
 
@@ -222,7 +220,7 @@ struct ModelData {
     float rotate;
     glm::vec3 scale;
 
-    AABB boundingBox;
+    /*AABB boundingBox;*/
     /*glm::vec3 minCorner;
     glm::vec3 maxCorner;*/
 
