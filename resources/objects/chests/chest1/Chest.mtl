@@ -11,6 +11,5 @@ Ni 1.450000
 d 1.000000
 illum 2
 map_Kd Chest_BaseColor.png
-map_Ns Chest_Roughness.png
-map_refl Chest_Normal.png
-map_Bump Chest_Normal.png
+
+

@@ -71,7 +71,7 @@ newmtl m_2
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
 	map_Ka z8dcrc.jpg
-	map_Kd z8dcrc.jpg
+	
 
 newmtl m_6
 	Ns 10.0000

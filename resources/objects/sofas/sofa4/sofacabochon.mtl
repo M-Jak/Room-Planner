@@ -12,12 +12,8 @@ newmtl wood_Mat
 	Kd 1.000000 1.000000 1.000000
 	Ks 0.000000 0.000000 0.000000
 	Ke 0.000000 0.000000 0.000000
-	map_Ka sofacabochon_wood_Mat_Diffuse.jpg
 	map_Kd sofacabochon_wood_Mat_Diffuse.jpg
-	map_Ks sofacabochon_wood_Mat_Specular.jpg
-	map_bump sofacabochon_wood_Mat_Normal.jpg
-	bump sofacabochon_wood_Mat_Normal.jpg
-
+	
 newmtl upholstery_Mat
 	Ns 10.000000
 	Ni 1.500000
@@ -29,8 +25,6 @@ newmtl upholstery_Mat
 	Kd 1.000000 1.000000 1.000000
 	Ks 0.000000 0.000000 0.000000
 	Ke 0.000000 0.000000 0.000000
-	map_Ka sofacabochon_upholstery_Mat_Diffuse.jpg
 	map_Kd sofacabochon_upholstery_Mat_Diffuse.jpg
-	map_Ks sofacabochon_upholstery_Mat_Specular.jpg
-	map_bump sofacabochon_upholstery_Mat_Normal.jpg
-	bump sofacabochon_upholstery_Mat_Normal.jpg
+	
+	

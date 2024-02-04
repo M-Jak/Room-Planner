@@ -11,8 +11,6 @@ newmtl Fabric_01
     d 1.000000
     illum 2
     map_Kd  Fabric036_4K_Color.png
-    map_Ns  Fabric036_4K_Roughness.png
-    map_Bump  -bm 1.000000 Fabric036_4K_NormalGL.png 
 
 newmtl Fabric_02
     Ns 250.000000
@@ -24,8 +22,6 @@ newmtl Fabric_02
     d 1.000000
     illum 2
     map_Kd  Fabric036_4K_Color.png
-    map_Ns  Fabric036_4K_Roughness.png
-    map_Bump  -bm 1.000000 Fabric036_4K_NormalGL.png
 
 newmtl Fabric_03
     Ns 250.000000
@@ -36,8 +32,7 @@ newmtl Fabric_03
     Ni 1.450000
     d 1.000000
     illum 2
-    map_Ks  4K-fabric_33-specular.jpg
-    map_Bump  -bm 1.000000 4K-fabric_33-normal.jpg
+    map_Ks 4K-fabric_33-specular.jpg
 
 newmtl Material.001
     Ns 250.000000
@@ -59,5 +54,3 @@ newmtl Woood
     d 1.000000
     illum 2
     map_Kd  Wood051_4K_Color.png
-    map_Ns  Wood051_4K_Roughness.png
-    map_Bump  -bm 1.000000 Wood051_4K_NormalDX.png
